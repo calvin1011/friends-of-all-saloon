@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Scissors, Menu, X } from 'lucide-react';
+import { Scissors, Menu, X, Settings, LogOut } from 'lucide-react';
 
-const Navigation = ({ activeTab, setActiveTab }) => {
+const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdminLogin }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navItems = [
         { id: 'home', label: 'Home' },
-        { id: 'clients', label: 'Clients' },
+        { id: 'clients', label: isAdmin ? 'Manage Clients' : 'Gallery' },
         { id: 'services', label: 'Services' },
         { id: 'contact', label: 'Contact' }
     ];
@@ -20,6 +20,19 @@ const Navigation = ({ activeTab, setActiveTab }) => {
         setIsMobileMenuOpen(false);
     };
 
+    const handleAdminLogin = () => {
+        setShowAdminLogin(true);
+        setIsMobileMenuOpen(false);
+    };
+
+    const handleLogout = () => {
+        setIsAdmin(false);
+        setActiveTab('home');
+        setIsMobileMenuOpen(false);
+        // Remove admin parameter from URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    };
+
     return (
         <nav className="bg-rose-600 text-white shadow-lg">
             <div className="max-w-6xl mx-auto px-4">
@@ -28,10 +41,15 @@ const Navigation = ({ activeTab, setActiveTab }) => {
                     <div className="flex items-center space-x-2">
                         <Scissors className="w-8 h-8" />
                         <h1 className="text-2xl font-bold">Friends of All</h1>
+                        {isAdmin && (
+                            <span className="bg-white text-rose-600 px-2 py-1 rounded text-sm font-semibold ml-2">
+                                Admin
+                            </span>
+                        )}
                     </div>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:flex space-x-6">
+                    <div className="hidden md:flex items-center space-x-6">
                         {navItems.map(item => (
                             <button
                                 key={item.id}
@@ -45,6 +63,25 @@ const Navigation = ({ activeTab, setActiveTab }) => {
                                 {item.label}
                             </button>
                         ))}
+
+                        {/* Admin Controls */}
+                        {isAdmin ? (
+                            <button
+                                onClick={handleLogout}
+                                className="px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleAdminLogin}
+                                className="px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                            >
+                                <Settings className="w-4 h-4" />
+                                <span>Admin</span>
+                            </button>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -73,6 +110,25 @@ const Navigation = ({ activeTab, setActiveTab }) => {
                                     {item.label}
                                 </button>
                             ))}
+
+                            {/* Mobile Admin Controls */}
+                            {isAdmin ? (
+                                <button
+                                    onClick={handleLogout}
+                                    className="px-4 py-3 rounded-lg text-left hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    <span>Logout</span>
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleAdminLogin}
+                                    className="px-4 py-3 rounded-lg text-left hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                                >
+                                    <Settings className="w-4 h-4" />
+                                    <span>Admin Login</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Edit3, Save, X, DollarSign } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '../utils/constants';
 
-const ServicesPage = ({ products, setProducts }) => {
+const ServicesPage = ({ products, setProducts, isAdmin }) => {
     const [editingProduct, setEditingProduct] = useState(null);
 
     const updateProduct = (productId, updates) => {
@@ -34,8 +34,12 @@ const ServicesPage = ({ products, setProducts }) => {
         <div className="max-w-6xl mx-auto p-6">
             {/* Header */}
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">Services & Pricing</h2>
-                <p className="text-gray-600">Manage your service offerings and pricing</p>
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                    {isAdmin ? 'Manage Services & Pricing' : 'Our Services & Pricing'}
+                </h2>
+                <p className="text-gray-600">
+                    {isAdmin ? 'Edit your service offerings and pricing' : 'Professional hair styling services'}
+                </p>
             </div>
 
             {/* Services Grid */}
@@ -61,7 +65,7 @@ const ServicesPage = ({ products, setProducts }) => {
                                             key={product.id}
                                             className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                                         >
-                                            {editingProduct === product.id ? (
+                                            {isAdmin && editingProduct === product.id ? (
                                                 <div className="flex-1 flex items-center space-x-4">
                                                     <input
                                                         type="text"
@@ -102,16 +106,18 @@ const ServicesPage = ({ products, setProducts }) => {
                                                         <h4 className="font-semibold text-gray-800">{product.name}</h4>
                                                     </div>
                                                     <div className="flex items-center space-x-4">
-                            <span className="text-2xl font-bold text-rose-600">
-                              ${product.price}
-                            </span>
-                                                        <button
-                                                            onClick={() => setEditingProduct(product.id)}
-                                                            className="text-gray-600 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                                                            title="Edit price"
-                                                        >
-                                                            <Edit3 className="w-4 h-4" />
-                                                        </button>
+                                                        <span className="text-2xl font-bold text-rose-600">
+                                                            ${product.price}
+                                                        </span>
+                                                        {isAdmin && (
+                                                            <button
+                                                                onClick={() => setEditingProduct(product.id)}
+                                                                className="text-gray-600 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                                                                title="Edit price"
+                                                            >
+                                                                <Edit3 className="w-4 h-4" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </>
                                             )}
@@ -124,25 +130,27 @@ const ServicesPage = ({ products, setProducts }) => {
                 })}
             </div>
 
-            {/* Summary Stats */}
-            <div className="mt-8 grid md:grid-cols-3 gap-6">
-                <div className="card p-6 text-center">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Total Services</h4>
-                    <p className="text-3xl font-bold text-rose-600">{products.length}</p>
+            {/* Summary Stats - Only show to admin */}
+            {isAdmin && (
+                <div className="mt-8 grid md:grid-cols-3 gap-6">
+                    <div className="card p-6 text-center">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-2">Total Services</h4>
+                        <p className="text-3xl font-bold text-rose-600">{products.length}</p>
+                    </div>
+                    <div className="card p-6 text-center">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-2">Average Price</h4>
+                        <p className="text-3xl font-bold text-rose-600">
+                            ${Math.round(products.reduce((sum, p) => sum + p.price, 0) / products.length)}
+                        </p>
+                    </div>
+                    <div className="card p-6 text-center">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-2">Price Range</h4>
+                        <p className="text-3xl font-bold text-rose-600">
+                            ${Math.min(...products.map(p => p.price))} - ${Math.max(...products.map(p => p.price))}
+                        </p>
+                    </div>
                 </div>
-                <div className="card p-6 text-center">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Average Price</h4>
-                    <p className="text-3xl font-bold text-rose-600">
-                        ${Math.round(products.reduce((sum, p) => sum + p.price, 0) / products.length)}
-                    </p>
-                </div>
-                <div className="card p-6 text-center">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Price Range</h4>
-                    <p className="text-3xl font-bold text-rose-600">
-                        ${Math.min(...products.map(p => p.price))} - ${Math.max(...products.map(p => p.price))}
-                    </p>
-                </div>
-            </div>
+            )}
         </div>
     );
 };
