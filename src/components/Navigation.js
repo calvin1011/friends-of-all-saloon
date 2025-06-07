@@ -36,11 +36,11 @@ const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdmin
     return (
         <nav className="bg-rose-600 text-white shadow-lg">
             <div className="max-w-6xl mx-auto px-4">
-                <div className="flex justify-between items-center py-4">
+                <div className="flex justify-between items-center py-6">
                     {/* Logo */}
-                    <div className="flex items-center space-x-2">
-                        <Scissors className="w-8 h-8" />
-                        <h1 className="text-2xl font-bold">Friends of All</h1>
+                    <div className="flex items-center space-x-3">
+                        <Scissors className="w-12 h-12" />
+                        <h1 className="text-4xl font-bold">Friends of All</h1>
                         {isAdmin && (
                             <span className="bg-white text-rose-600 px-2 py-1 rounded text-sm font-semibold ml-2">
                                 Admin
@@ -49,15 +49,15 @@ const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdmin
                     </div>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:flex items-center space-x-6">
+                    <div className="hidden md:flex items-center space-x-8">
                         {navItems.map(item => (
                             <button
                                 key={item.id}
                                 onClick={() => handleTabClick(item.id)}
-                                className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                                className={`px-6 py-3 rounded-xl text-lg font-semibold transition-all duration-300 ${
                                     activeTab === item.id
-                                        ? 'bg-white text-rose-600 font-semibold'
-                                        : 'hover:bg-rose-700 hover:scale-105'
+                                        ? 'bg-white text-rose-600 font-bold shadow-lg scale-105'
+                                        : 'hover:bg-rose-700 hover:scale-105 hover:shadow-md'
                                 }`}
                             >
                                 {item.label}
@@ -68,17 +68,17 @@ const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdmin
                         {isAdmin ? (
                             <button
                                 onClick={handleLogout}
-                                className="px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                                className="px-6 py-3 rounded-xl text-lg font-semibold hover:bg-rose-700 transition-all duration-300 flex items-center space-x-2 hover:scale-105"
                             >
-                                <LogOut className="w-4 h-4" />
+                                <LogOut className="w-5 h-5" />
                                 <span>Logout</span>
                             </button>
                         ) : (
                             <button
                                 onClick={handleAdminLogin}
-                                className="px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                                className="px-6 py-3 rounded-xl text-lg font-semibold hover:bg-rose-700 transition-all duration-300 flex items-center space-x-2 hover:scale-105"
                             >
-                                <Settings className="w-4 h-4" />
+                                <Settings className="w-5 h-5" />
                                 <span>Admin</span>
                             </button>
                         )}
@@ -87,24 +87,24 @@ const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdmin
                     {/* Mobile Menu Button */}
                     <button
                         onClick={toggleMobileMenu}
-                        className="md:hidden p-2 rounded-lg hover:bg-rose-700 transition-colors"
+                        className="md:hidden p-3 rounded-xl hover:bg-rose-700 transition-colors"
                     >
-                        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
                     </button>
                 </div>
 
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden py-4 border-t border-rose-500">
-                        <div className="flex flex-col space-y-2">
+                    <div className="md:hidden py-6 border-t border-rose-500">
+                        <div className="flex flex-col space-y-3">
                             {navItems.map(item => (
                                 <button
                                     key={item.id}
                                     onClick={() => handleTabClick(item.id)}
-                                    className={`px-4 py-3 rounded-lg text-left transition-all duration-300 ${
+                                    className={`px-6 py-4 rounded-xl text-lg font-semibold text-left transition-all duration-300 ${
                                         activeTab === item.id
-                                            ? 'bg-white text-rose-600 font-semibold'
-                                            : 'hover:bg-rose-700'
+                                            ? 'bg-white text-rose-600 font-bold shadow-lg'
+                                            : 'hover:bg-rose-700 hover:scale-105'
                                     }`}
                                 >
                                     {item.label}
@@ -115,17 +115,17 @@ const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdmin
                             {isAdmin ? (
                                 <button
                                     onClick={handleLogout}
-                                    className="px-4 py-3 rounded-lg text-left hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                                    className="px-6 py-4 rounded-xl text-lg font-semibold text-left hover:bg-rose-700 transition-all duration-300 flex items-center space-x-3"
                                 >
-                                    <LogOut className="w-4 h-4" />
+                                    <LogOut className="w-5 h-5" />
                                     <span>Logout</span>
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleAdminLogin}
-                                    className="px-4 py-3 rounded-lg text-left hover:bg-rose-700 transition-colors flex items-center space-x-2"
+                                    className="px-6 py-4 rounded-xl text-lg font-semibold text-left hover:bg-rose-700 transition-all duration-300 flex items-center space-x-3"
                                 >
-                                    <Settings className="w-4 h-4" />
+                                    <Settings className="w-5 h-5" />
                                     <span>Admin Login</span>
                                 </button>
                             )}
