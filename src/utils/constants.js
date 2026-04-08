@@ -28,7 +28,7 @@ export const INITIAL_PRODUCTS = [
     { id: 10, name: 'Beard Trim', price: 20, category: 'Cut' }
 ];
 
-export const SERVICE_CATEGORIES = ['Wash', 'Cut', 'Color', 'Treatment', 'Chemical', 'Style'];
+export const SERVICE_CATEGORIES = ['Wash', 'Cut', 'Color', 'Treatment', 'Chemical', 'Style', 'Braiding'];
 
 export const BUSINESS_INFO = {
     name: 'Friends of All',
