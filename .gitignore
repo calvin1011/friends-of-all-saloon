@@ -32,8 +32,7 @@ Desktop.ini
 .idea/
 *.iml
 
-# Local tooling (tokens, registry auth, Cursor workspace state)
-.npmrc
+# Local tooling (Cursor workspace state). Use user-level ~/.npmrc for private registry tokens.
 .cursor/
 
 # Local-only planning (not shared with the repo)

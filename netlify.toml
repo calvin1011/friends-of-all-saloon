@@ -1,0 +1,12 @@
+# Netlify deploys the production build when this repo is connected in the Netlify UI.
+# Full checks (audit, lint, typecheck, tests) run in GitHub Actions — see .github/workflows/ci.yml
+#
+# Admin login: set REACT_APP_ADMIN_PASSWORD in Netlify → Site configuration → Environment variables,
+# then redeploy. (Same variable in local .env for npm start — see .env.example.)
+
+[build]
+  publish = "build"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"

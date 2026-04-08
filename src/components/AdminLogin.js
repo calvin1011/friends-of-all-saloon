@@ -6,12 +6,18 @@ const AdminLogin = ({ setIsAdmin, setShowAdminLogin }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
 
-    // Simple password - you can change this
-    const ADMIN_PASSWORD = 'friendsofall2025';
+    const expectedPassword = process.env.REACT_APP_ADMIN_PASSWORD || '';
+    const loginConfigured = expectedPassword.length > 0;
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (password === ADMIN_PASSWORD) {
+        if (!loginConfigured) {
+            setError(
+                'Admin login is not configured. Set REACT_APP_ADMIN_PASSWORD in .env (local) or in your host (e.g. Netlify) and rebuild.'
+            );
+            return;
+        }
+        if (password === expectedPassword) {
             setIsAdmin(true);
             setShowAdminLogin(false);
             setError('');
@@ -36,6 +42,12 @@ const AdminLogin = ({ setIsAdmin, setShowAdminLogin }) => {
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Access</h2>
                     <p className="text-gray-600">Enter your password to manage the salon</p>
+                    {!loginConfigured && (
+                        <p className="text-amber-700 text-sm mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-left">
+                            Admin password is missing. Add <code className="text-xs">REACT_APP_ADMIN_PASSWORD</code>{' '}
+                            to <code className="text-xs">.env</code> or hosting env, then restart dev server or redeploy.
+                        </p>
+                    )}
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
@@ -50,12 +62,15 @@ const AdminLogin = ({ setIsAdmin, setShowAdminLogin }) => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="input-field pr-12"
                                 placeholder="Enter admin password"
-                                required
+                                required={loginConfigured}
+                                disabled={!loginConfigured}
                             />
                             <button
                                 type="button"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                disabled={!loginConfigured}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 disabled:opacity-40"
                             >
                                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
@@ -67,7 +82,8 @@ const AdminLogin = ({ setIsAdmin, setShowAdminLogin }) => {
 
                     <button
                         type="submit"
-                        className="btn-primary w-full py-3"
+                        className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!loginConfigured}
                     >
                         Login as Admin
                     </button>

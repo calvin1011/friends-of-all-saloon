@@ -13,6 +13,8 @@ body {
     line-height: 1.6;
 }
 
+
+
 /* Utility Classes */
 .min-h-screen { min-height: 100vh; }
 .max-w-6xl { max-width: 72rem; margin: 0 auto; }

@@ -18,9 +18,15 @@ const ServicesPage = ({ products, setProducts, isAdmin }) => {
     };
 
     const saveProduct = (productId) => {
-        const nameInput = document.getElementById(`product-name-${productId}`);
-        const priceInput = document.getElementById(`product-price-${productId}`);
-        const categorySelect = document.getElementById(`product-category-${productId}`);
+        const nameInput = /** @type {HTMLInputElement | null} */ (
+            document.getElementById(`product-name-${productId}`)
+        );
+        const priceInput = /** @type {HTMLInputElement | null} */ (
+            document.getElementById(`product-price-${productId}`)
+        );
+        const categorySelect = /** @type {HTMLSelectElement | null} */ (
+            document.getElementById(`product-category-${productId}`)
+        );
 
         if (nameInput && priceInput) {
             updateProduct(productId, {
