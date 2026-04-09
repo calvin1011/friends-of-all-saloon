@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Navigation from './components/Navigation';
 import HomePage from './components/HomePage';
 import ClientsPage from './components/ClientsPage';
@@ -6,6 +6,7 @@ import ServicesPage from './components/ServicesPage';
 import ContactPage from './components/ContactPage';
 import AdminLogin from './components/AdminLogin';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { useSiteContent } from './hooks/useSiteContent';
 import { INITIAL_CLIENTS, INITIAL_PRODUCTS } from './utils/constants';
 
 function App() {
@@ -14,9 +15,25 @@ function App() {
     const [products, setProducts] = useLocalStorage('salon-products', INITIAL_PRODUCTS);
     const [isAdmin, setIsAdmin] = useState(false);
     const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const siteContent = useSiteContent();
+    const cmsProductsSyncedRef = useRef(false);
+
+    useEffect(() => {
+        if (
+            siteContent.loading ||
+            siteContent.source !== 'cms' ||
+            !siteContent.services ||
+            siteContent.services.length === 0 ||
+            cmsProductsSyncedRef.current
+        ) {
+            return;
+        }
+        cmsProductsSyncedRef.current = true;
+        setProducts(siteContent.services.map((s) => ({ ...s })));
+    }, [siteContent.loading, siteContent.source, siteContent.services, setProducts]);
 
     // Check URL parameters for admin mode
-    React.useEffect(() => {
+    useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('admin') === 'true') {
             setShowAdminLogin(true);
@@ -26,7 +43,13 @@ function App() {
     const renderActiveTab = () => {
         switch (activeTab) {
             case 'home':
-                return <HomePage setActiveTab={setActiveTab} />;
+                return (
+                    <HomePage
+                        setActiveTab={setActiveTab}
+                        heroTitle={siteContent.home.heroTitle}
+                        heroSubtitle={siteContent.home.heroSubtitle}
+                    />
+                );
             case 'clients':
                 return isAdmin ?
                     <ClientsPage clients={clients} setClients={setClients} /> :
@@ -61,9 +84,15 @@ function App() {
             case 'services':
                 return <ServicesPage products={products} setProducts={setProducts} isAdmin={isAdmin} />;
             case 'contact':
-                return <ContactPage products={products} />;
+                return <ContactPage products={products} businessInfo={siteContent.businessInfo} />;
             default:
-                return <HomePage setActiveTab={setActiveTab} />;
+                return (
+                    <HomePage
+                        setActiveTab={setActiveTab}
+                        heroTitle={siteContent.home.heroTitle}
+                        heroSubtitle={siteContent.home.heroSubtitle}
+                    />
+                );
         }
     };
 
@@ -79,6 +108,7 @@ function App() {
                 isAdmin={isAdmin}
                 setIsAdmin={setIsAdmin}
                 setShowAdminLogin={setShowAdminLogin}
+                businessName={siteContent.businessInfo.name}
             />
             <main className="pt-8">
                 {renderActiveTab()}

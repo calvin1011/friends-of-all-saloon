@@ -4,12 +4,17 @@ node_modules/
 # Production build
 build/
 
-# Environment and secrets (keep .env.example tracked if you add one)
+# Environment and secrets
 .env
+.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Project config kept local only
+.gitleaksignore
+.npmrc
 
 # Logs
 npm-debug.log*

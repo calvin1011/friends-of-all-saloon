@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Scissors, Menu, X, Settings, LogOut } from 'lucide-react';
 
-const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdminLogin }) => {
+const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdminLogin, businessName }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navItems = [
@@ -40,7 +40,7 @@ const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdmin
                     {/* Logo */}
                     <div className="flex items-center space-x-3">
                         <Scissors className="w-12 h-12" />
-                        <h1 className="text-4xl font-bold">Friends of All</h1>
+                        <h1 className="text-4xl font-bold">{businessName}</h1>
                         {isAdmin && (
                             <span className="bg-white text-rose-600 px-2 py-1 rounded text-sm font-semibold ml-2">
                                 Admin

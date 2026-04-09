@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Phone, MapPin, Clock, Send } from 'lucide-react';
-import { BUSINESS_INFO } from '../utils/constants';
 
-const ContactPage = ({ products }) => {
+const ContactPage = ({ products, businessInfo }) => {
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -71,7 +70,7 @@ We will contact you soon to confirm your appointment.
                             </div>
                             <div>
                                 <p className="font-medium text-gray-800">Phone</p>
-                                <p className="text-gray-600">{BUSINESS_INFO.phone}</p>
+                                <p className="text-gray-600">{businessInfo.phone}</p>
                             </div>
                         </div>
 
@@ -81,7 +80,7 @@ We will contact you soon to confirm your appointment.
                             </div>
                             <div>
                                 <p className="font-medium text-gray-800">Address</p>
-                                <p className="text-gray-600">{BUSINESS_INFO.address}</p>
+                                <p className="text-gray-600">{businessInfo.address}</p>
                             </div>
                         </div>
 
@@ -92,7 +91,7 @@ We will contact you soon to confirm your appointment.
                             <div>
                                 <p className="font-medium text-gray-800 mb-2">Business Hours</p>
                                 <div className="space-y-1">
-                                    {Object.entries(BUSINESS_INFO.hours).map(([day, hours]) => (
+                                    {Object.entries(businessInfo.hours).map(([day, hours]) => (
                                         <div key={day} className="flex justify-between">
                                             <span className="text-gray-600">{day}:</span>
                                             <span className="text-gray-600">{hours}</span>

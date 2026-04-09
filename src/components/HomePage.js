@@ -1,7 +1,7 @@
 import React from 'react';
 import { Scissors, Star, Clock } from 'lucide-react';
 
-const HomePage = ({ setActiveTab }) => {
+const HomePage = ({ setActiveTab, heroTitle, heroSubtitle }) => {
     const features = [
         {
             icon: <Scissors className="w-8 h-8 text-rose-600" />,
@@ -25,13 +25,8 @@ const HomePage = ({ setActiveTab }) => {
             <div className="max-w-6xl mx-auto px-4 py-16">
                 {/* Hero Section */}
                 <div className="text-center mb-16 fade-in">
-                    <h2 className="text-5xl font-bold text-gray-800 mb-6">
-                        Welcome to Friends of All
-                    </h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                        Professional hair styling services with a personal touch.
-                        Where every client becomes family.
-                    </p>
+                    <h2 className="text-5xl font-bold text-gray-800 mb-6">{heroTitle}</h2>
+                    <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">{heroSubtitle}</p>
                 </div>
 
                 {/* Features Grid */}
