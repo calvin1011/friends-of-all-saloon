@@ -1,12 +1,18 @@
 import '@testing-library/jest-dom';
 
-// Jest does not load .env.local. If unset (e.g. CI), set a trivial placeholder for admin-login tests only.
-const adminEnvKey = 'REACT_APP_ADMIN_PASSWORD';
-if (!process.env[adminEnvKey]) {
-    process.env[adminEnvKey] = String.fromCharCode(116);
+function createMockNetlifyIdentity() {
+    return {
+        init: jest.fn(),
+        on: jest.fn(),
+        off: jest.fn(),
+        open: jest.fn(),
+        logout: jest.fn(),
+        currentUser: jest.fn(() => null),
+    };
 }
 
 beforeEach(() => {
     localStorage.clear();
     jest.restoreAllMocks();
+    window.netlifyIdentity = createMockNetlifyIdentity();
 });

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Scissors, Menu, X, Settings, LogOut } from 'lucide-react';
 
-const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdminLogin, businessName }) => {
+const Navigation = ({ activeTab, setActiveTab, isAdmin, onAdminLogout, setShowAdminLogin, businessName }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navItems = [
@@ -26,11 +26,8 @@ const Navigation = ({ activeTab, setActiveTab, isAdmin, setIsAdmin, setShowAdmin
     };
 
     const handleLogout = () => {
-        setIsAdmin(false);
-        setActiveTab('home');
+        onAdminLogout();
         setIsMobileMenuOpen(false);
-        // Remove admin parameter from URL
-        window.history.replaceState({}, document.title, window.location.pathname);
     };
 
     return (

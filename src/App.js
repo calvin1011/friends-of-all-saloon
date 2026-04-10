@@ -6,6 +6,7 @@ import ServicesPage from './components/ServicesPage';
 import ContactPage from './components/ContactPage';
 import AdminLogin from './components/AdminLogin';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { useNetlifyIdentity } from './hooks/useNetlifyIdentity';
 import { useSiteContent } from './hooks/useSiteContent';
 import { INITIAL_CLIENTS, INITIAL_PRODUCTS } from './utils/constants';
 
@@ -13,8 +14,9 @@ function App() {
     const [activeTab, setActiveTab] = useState('home');
     const [clients, setClients] = useLocalStorage('salon-clients', INITIAL_CLIENTS);
     const [products, setProducts] = useLocalStorage('salon-products', INITIAL_PRODUCTS);
-    const [isAdmin, setIsAdmin] = useState(false);
     const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const { user, identityError, isReady: isIdentityReady, login, logout } = useNetlifyIdentity();
+    const isAdmin = Boolean(user);
     const siteContent = useSiteContent();
     const cmsProductsSyncedRef = useRef(false);
 
@@ -39,6 +41,12 @@ function App() {
             setShowAdminLogin(true);
         }
     }, []);
+
+    useEffect(() => {
+        if (user && showAdminLogin) {
+            setShowAdminLogin(false);
+        }
+    }, [user, showAdminLogin]);
 
     const renderActiveTab = () => {
         switch (activeTab) {
@@ -97,7 +105,14 @@ function App() {
     };
 
     if (showAdminLogin && !isAdmin) {
-        return <AdminLogin setIsAdmin={setIsAdmin} setShowAdminLogin={setShowAdminLogin} />;
+        return (
+            <AdminLogin
+                onOpenSignIn={login}
+                identityError={identityError}
+                isIdentityReady={isIdentityReady}
+                setShowAdminLogin={setShowAdminLogin}
+            />
+        );
     }
 
     return (
@@ -106,7 +121,11 @@ function App() {
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 isAdmin={isAdmin}
-                setIsAdmin={setIsAdmin}
+                onAdminLogout={() => {
+                    logout();
+                    setActiveTab('home');
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }}
                 setShowAdminLogin={setShowAdminLogin}
                 businessName={siteContent.businessInfo.name}
             />
