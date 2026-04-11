@@ -51,6 +51,18 @@ function getWidget() {
 
 const IDENTITY_HASH_TOKEN_RE = /(confirmation|invite|recovery|email_change)_token=/;
 
+/**
+ * Captured once at module-load time — before the widget's async runRoutes() clears the hash.
+ * During invite/recovery flows the widget verifies the token and fires 'init' with a
+ * half-authenticated user BEFORE the password-setup modal is shown. If React treats that
+ * user as a real login it will dismiss the admin-login screen, show the dashboard, and the
+ * widget's full-screen overlay will sit on top blocking every click. We use this flag to
+ * suppress user state from onInit/currentUser and only honour the explicit 'login' event
+ * that fires after the user completes the password form.
+ */
+const _hadTokenHashOnLoad =
+    typeof window !== 'undefined' && IDENTITY_HASH_TOKEN_RE.test(window.location.hash || '');
+
 /** True when the location hash carries an Identity invite, recovery, or confirmation token. */
 export function urlHasNetlifyIdentityTokenHash() {
     if (typeof window === 'undefined') {
@@ -204,7 +216,9 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError, setIsReady
 
     const onInit = (user) => {
         setIdentityError('');
-        setUser(user ?? null);
+        if (!_hadTokenHashOnLoad) {
+            setUser(user ?? null);
+        }
         if (setIsReady) setIsReady(true);
     };
     const onLogin = (user) => {
@@ -234,11 +248,13 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError, setIsReady
         if (setIsReady) setIsReady(true);
     }
 
-    try {
-        setUser(netlifyIdentity.currentUser() ?? null);
-    } catch (err) {
-        logError('Netlify Identity currentUser failed', err);
-        setUser(null);
+    if (!_hadTokenHashOnLoad) {
+        try {
+            setUser(netlifyIdentity.currentUser() ?? null);
+        } catch (err) {
+            logError('Netlify Identity currentUser failed', err);
+            setUser(null);
+        }
     }
 
     return () => {

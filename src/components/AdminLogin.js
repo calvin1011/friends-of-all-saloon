@@ -36,12 +36,21 @@ const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdmin
                     ) : null}
 
                     {hasTokenHash && isIdentityReady ? (
-                        // Widget is ready and has processed the invite/recovery hash — the modal should
-                        // already be open. Show a status line instead of the login button so we don't
-                        // accidentally open the wrong (login) modal on top of the invite flow.
-                        <p className="text-gray-500 text-sm text-center">
-                            Check for the sign-in window — it should be open now.
-                        </p>
+                        // Widget is ready and should have opened the invite/recovery modal.
+                        // Show a status message and a secondary fallback in case the user
+                        // dismissed the modal or already has a password from a previous invite.
+                        <>
+                            <p className="text-gray-500 text-sm text-center mb-4">
+                                The sign-in window should be open now. Set your password there to continue.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={onOpenSignIn}
+                                className="text-rose-600 hover:text-rose-800 text-sm w-full text-center"
+                            >
+                                Already set your password? Sign in here
+                            </button>
+                        </>
                     ) : (
                         <>
                             <button
