@@ -7,7 +7,7 @@ import ContactPage from './components/ContactPage';
 import AdminLogin from './components/AdminLogin';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useNetlifyIdentity } from './hooks/useNetlifyIdentity';
-import { urlHasNetlifyIdentityTokenHash } from './lib/netlifyIdentityClient';
+import { getExtractedIdentityToken } from './lib/netlifyIdentityClient';
 import { useSiteContent } from './hooks/useSiteContent';
 import { INITIAL_CLIENTS, INITIAL_PRODUCTS } from './utils/constants';
 
@@ -16,7 +16,7 @@ function App() {
     const [clients, setClients] = useLocalStorage('salon-clients', INITIAL_CLIENTS);
     const [products, setProducts] = useLocalStorage('salon-products', INITIAL_PRODUCTS);
     const [showAdminLogin, setShowAdminLogin] = useState(false);
-    const [hasIdentityTokenHash, setHasIdentityTokenHash] = useState(false);
+    const [identityToken] = useState(() => getExtractedIdentityToken());
     const { user, identityError, isReady: isIdentityReady, login, logout } = useNetlifyIdentity();
     const isAdmin = Boolean(user);
     const siteContent = useSiteContent();
@@ -37,16 +37,13 @@ function App() {
     }, [siteContent.loading, siteContent.source, siteContent.services, setProducts]);
 
     // Admin screen: query param, or Identity invite / recovery / confirmation links (hash).
-    // Capture hasTokenHash now — the widget will clear the hash from the URL once it processes it,
-    // so we must read it before that happens (effects run before any async widget work on this tick).
+    // Token was already extracted and hash cleared at module-load time by getExtractedIdentityToken().
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        const tokenHash = urlHasNetlifyIdentityTokenHash();
-        if (urlParams.get('admin') === 'true' || tokenHash) {
+        if (urlParams.get('admin') === 'true' || identityToken) {
             setShowAdminLogin(true);
-            if (tokenHash) setHasIdentityTokenHash(true);
         }
-    }, []);
+    }, [identityToken]);
 
     useEffect(() => {
         if (user && showAdminLogin) {
@@ -117,7 +114,7 @@ function App() {
                 identityError={identityError}
                 isIdentityReady={isIdentityReady}
                 setShowAdminLogin={setShowAdminLogin}
-                hasTokenHash={hasIdentityTokenHash}
+                identityToken={identityToken}
             />
         );
     }

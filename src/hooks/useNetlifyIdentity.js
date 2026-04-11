@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
+    getExtractedIdentityToken,
     logoutNetlifyIdentity,
     openNetlifyIdentityLogin,
     preflightNetlifyIdentitySettings,
     subscribeNetlifyIdentity,
-    urlHasNetlifyIdentityTokenHash,
 } from '../lib/netlifyIdentityClient';
 
 /**
@@ -24,7 +24,7 @@ export function useNetlifyIdentity() {
         if (process.env.NODE_ENV === 'test') {
             return undefined;
         }
-        if (!urlHasNetlifyIdentityTokenHash()) {
+        if (!getExtractedIdentityToken()) {
             return undefined;
         }
         const controller = new AbortController();

@@ -68,6 +68,6 @@ describe('App', () => {
         window.history.replaceState({}, '', '/#invite_token=test');
         render(<App />);
 
-        expect(screen.getByRole('heading', { name: /Admin Access/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /Set Your Password/i })).toBeInTheDocument();
     });
 });

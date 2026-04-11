@@ -52,14 +52,36 @@ function getWidget() {
 const IDENTITY_HASH_TOKEN_RE = /(confirmation|invite|recovery|email_change)_token=/;
 
 /**
- * Captured once at module-load time — before the widget's async runRoutes() clears the hash.
- * During invite/recovery flows the widget verifies the token and fires 'init' with a
- * half-authenticated user BEFORE the password-setup modal is shown. If React treats that
- * user as a real login it will dismiss the admin-login screen, show the dashboard, and the
- * widget's full-screen overlay will sit on top blocking every click. We use this flag to
- * suppress user state from onInit/currentUser and only honour the explicit 'login' event
- * that fires after the user completes the password form.
+ * Extract and immediately clear any identity token hash from the URL at module-load time.
+ * This runs BEFORE the widget can call runRoutes(), so the widget never sees the token and
+ * never opens its buggy full-screen modal overlay that freezes the page. We handle the token
+ * ourselves via direct GoTrue REST API calls and our own password form.
  */
+const _extractedTokenHash = (() => {
+    if (typeof window === 'undefined') return null;
+    const hash = window.location.hash || '';
+    const match = hash.match(/#(confirmation|invite|recovery|email_change)_token=([^&]+)/);
+    if (!match) return null;
+    // Clear the hash immediately so the widget never processes it.
+    window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname + window.location.search,
+    );
+    return { type: match[1], token: match[2] };
+})();
+
+/** Returns the extracted token info if the page was loaded with an identity token hash. */
+export function getExtractedIdentityToken() {
+    if (_extractedTokenHash) return _extractedTokenHash;
+    // Fallback: check current hash (covers tests and late navigation).
+    if (typeof window === 'undefined') return null;
+    const hash = window.location.hash || '';
+    const match = hash.match(/#(confirmation|invite|recovery|email_change)_token=([^&]+)/);
+    return match ? { type: match[1], token: match[2] } : null;
+}
+
+// After extraction the hash is cleared, so this will be false — widget behaves normally.
 const _hadTokenHashOnLoad =
     typeof window !== 'undefined' && IDENTITY_HASH_TOKEN_RE.test(window.location.hash || '');
 
@@ -267,4 +289,58 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError, setIsReady
             logError('Netlify Identity unsubscribe failed', err);
         }
     };
+}
+
+/**
+ * Verify an identity token (invite or recovery) and set a new password via the GoTrue REST API.
+ * Bypasses the widget entirely — no modal overlay, no frozen UI.
+ * @param {string} token  The raw token value from the URL hash.
+ * @param {string} type   One of 'invite', 'recovery', 'confirmation', 'email_change'.
+ * @param {string} newPassword  The password the user wants to set.
+ * @returns {Promise<{ success: boolean, error?: string }>}
+ */
+export async function verifyAndSetPassword(token, type, newPassword) {
+    const origin = window.location.origin;
+    const verifyType = type === 'invite' ? 'signup' : type;
+
+    let session;
+    try {
+        const verifyRes = await fetch(`${origin}/.netlify/identity/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, type: verifyType }),
+        });
+        if (!verifyRes.ok) {
+            const body = await verifyRes.text().catch(() => '');
+            return {
+                success: false,
+                error: verifyRes.status === 404
+                    ? 'This link has expired or was already used. Please request a new one.'
+                    : `Token verification failed (${verifyRes.status}). ${body}`,
+            };
+        }
+        session = await verifyRes.json();
+    } catch (err) {
+        logError('Identity token verify failed', err);
+        return { success: false, error: 'Network error verifying your link. Please try again.' };
+    }
+
+    try {
+        const updateRes = await fetch(`${origin}/.netlify/identity/user`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ password: newPassword }),
+        });
+        if (!updateRes.ok) {
+            const body = await updateRes.text().catch(() => '');
+            return { success: false, error: `Password update failed (${updateRes.status}). ${body}` };
+        }
+        return { success: true };
+    } catch (err) {
+        logError('Identity password update failed', err);
+        return { success: false, error: 'Network error setting your password. Please try again.' };
+    }
 }
