@@ -29,6 +29,13 @@
       if (!window.netlifyIdentity || document.getElementById('netlify-identity-widget')) {
         return;
       }
+      // Skip early init when the URL has an identity token hash (invite, recovery, confirmation).
+      // These flows need React's event listeners registered BEFORE init() triggers runRoutes(),
+      // otherwise the widget processes the token silently, fires events nobody catches, and the
+      // password-reset / invite-accept modals never appear.
+      if (/(confirmation|invite|recovery|email_change)_token=/.test(window.location.hash || '')) {
+        return;
+      }
       window.netlifyIdentity.init();
       // Signal to the React module that init() has been called and we will catch the init event here,
       // so React does not call init() a second time or wait indefinitely for an event it already missed.
