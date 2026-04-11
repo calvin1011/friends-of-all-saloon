@@ -7,6 +7,7 @@ import ContactPage from './components/ContactPage';
 import AdminLogin from './components/AdminLogin';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useNetlifyIdentity } from './hooks/useNetlifyIdentity';
+import { urlHasNetlifyIdentityTokenHash } from './lib/netlifyIdentityClient';
 import { useSiteContent } from './hooks/useSiteContent';
 import { INITIAL_CLIENTS, INITIAL_PRODUCTS } from './utils/constants';
 
@@ -34,10 +35,10 @@ function App() {
         setProducts(siteContent.services.map((s) => ({ ...s })));
     }, [siteContent.loading, siteContent.source, siteContent.services, setProducts]);
 
-    // Check URL parameters for admin mode
+    // Admin screen: query param, or Identity invite / recovery / confirmation links (hash)
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('admin') === 'true') {
+        if (urlParams.get('admin') === 'true' || urlHasNetlifyIdentityTokenHash()) {
             setShowAdminLogin(true);
         }
     }, []);

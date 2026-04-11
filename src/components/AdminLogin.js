@@ -16,13 +16,8 @@ const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdmin
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Access</h2>
                     <p className="text-gray-600">
-                        Sign in with your Netlify Identity account. The owner receives invites from the Netlify
-                        dashboard (Identity tab).
-                    </p>
-                    <p className="text-gray-500 text-sm mt-3 text-left bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        Local dev: set <code className="text-xs">REACT_APP_NETLIFY_IDENTITY_URL</code> to your site&apos;s
-                        Identity endpoint (for example <code className="text-xs">https://your-site.netlify.app/.netlify/identity</code>
-                        ) or enter the site URL when the widget prompts on first open.
+                        Sign in with the email address you were invited with. If you opened an invite or password
+                        reset link from your email, use the button below to finish setting your password.
                     </p>
                 </div>
 

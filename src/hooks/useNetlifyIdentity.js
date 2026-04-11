@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import {
     logoutNetlifyIdentity,
     openNetlifyIdentityLogin,
@@ -13,7 +13,7 @@ export function useNetlifyIdentity() {
     const [identityError, setIdentityError] = useState('');
     const [isReady, setIsReady] = useState(false);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const unsub = subscribeNetlifyIdentity({ setUser, setIdentityError });
         setIsReady(true);
         return unsub;

@@ -12,6 +12,22 @@ export function getExplicitIdentityApiUrl() {
     return typeof url === 'string' && url.trim().length > 0 ? url.trim() : '';
 }
 
+/** Maps widget error payloads to a safe user-visible string (never "null"). */
+export function formatIdentityError(err) {
+    if (err == null) {
+        return 'Sign-in error. Please try again.';
+    }
+    if (typeof err === 'string') {
+        const s = err.trim();
+        return s.length > 0 ? s : 'Sign-in error. Please try again.';
+    }
+    if (typeof err === 'object' && typeof err.message === 'string') {
+        const s = err.message.trim();
+        return s.length > 0 ? s : 'Sign-in error. Please try again.';
+    }
+    return 'Sign-in error. Please try again.';
+}
+
 function isTestEnv() {
     return process.env.NODE_ENV === 'test';
 }
@@ -31,6 +47,45 @@ function getWidget() {
         return null;
     }
     return w;
+}
+
+const IDENTITY_HASH_TOKEN_RE = /(confirmation|invite|recovery|email_change)_token=/;
+
+/** True when the location hash carries an Identity invite, recovery, or confirmation token. */
+export function urlHasNetlifyIdentityTokenHash() {
+    if (typeof window === 'undefined') {
+        return false;
+    }
+    return IDENTITY_HASH_TOKEN_RE.test(window.location.hash || '');
+}
+
+/**
+ * If the URL still contains an Identity hash after init, open the login modal so the widget
+ * can finish invite / recovery flows (helps SPAs where timing misses the default handler).
+ */
+function nudgeIdentityModalIfHashStillPresent() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+    const tryOpen = () => {
+        const hash = window.location.hash || '';
+        if (!IDENTITY_HASH_TOKEN_RE.test(hash)) {
+            return;
+        }
+        const netlifyIdentity = getWidget();
+        if (!netlifyIdentity) {
+            return;
+        }
+        initNetlifyIdentityWidget();
+        try {
+            netlifyIdentity.open('login');
+        } catch (err) {
+            logError('Netlify Identity nudge open failed', err);
+        }
+    };
+    setTimeout(tryOpen, 0);
+    setTimeout(tryOpen, 400);
+    setTimeout(tryOpen, 1200);
 }
 
 /**
@@ -115,8 +170,7 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError }) {
         setUser(null);
     };
     const onError = (err) => {
-        const message = err && typeof err.message === 'string' ? err.message : String(err);
-        setIdentityError(message || 'Identity error');
+        setIdentityError(formatIdentityError(err));
         logError('Netlify Identity error', err);
     };
 
@@ -126,6 +180,7 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError }) {
     netlifyIdentity.on('error', onError);
 
     initNetlifyIdentityWidget();
+    nudgeIdentityModalIfHashStillPresent();
 
     try {
         setUser(netlifyIdentity.currentUser() ?? null);

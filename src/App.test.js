@@ -63,4 +63,11 @@ describe('App', () => {
 
         expect(screen.getByRole('heading', { name: /Admin Access/i })).toBeInTheDocument();
     });
+
+    it('opens admin login when URL hash contains a Netlify Identity invite token', () => {
+        window.history.replaceState({}, '', '/#invite_token=test');
+        render(<App />);
+
+        expect(screen.getByRole('heading', { name: /Admin Access/i })).toBeInTheDocument();
+    });
 });
