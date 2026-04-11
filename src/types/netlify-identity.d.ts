@@ -12,5 +12,7 @@ type NetlifyIdentityWidgetApi = {
 declare global {
     interface Window {
         netlifyIdentity?: NetlifyIdentityWidgetApi;
+        /** Set by the early-init script in public/index.html once the widget's init event fires. */
+        __netlifyIdentityWidgetReady?: boolean;
     }
 }

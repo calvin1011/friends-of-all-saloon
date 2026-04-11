@@ -30,6 +30,11 @@
         return;
       }
       window.netlifyIdentity.init();
+      // Signal to the React module that init() has been called and we will catch the init event here,
+      // so React does not call init() a second time or wait indefinitely for an event it already missed.
+      window.netlifyIdentity.on('init', function () {
+        window.__netlifyIdentityWidgetReady = true;
+      });
     } catch (ignoreEarlyIdentityInit) {
       /* Best-effort: React will call init again on localhost or if this runs too early. */
     }

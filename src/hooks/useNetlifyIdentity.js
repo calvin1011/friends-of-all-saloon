@@ -16,8 +16,7 @@ export function useNetlifyIdentity() {
     const [isReady, setIsReady] = useState(false);
 
     useLayoutEffect(() => {
-        const unsub = subscribeNetlifyIdentity({ setUser, setIdentityError });
-        setIsReady(true);
+        const unsub = subscribeNetlifyIdentity({ setUser, setIdentityError, setIsReady });
         return unsub;
     }, []);
 

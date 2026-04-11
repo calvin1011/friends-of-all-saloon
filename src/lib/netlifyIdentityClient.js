@@ -178,12 +178,13 @@ export function logoutNetlifyIdentity() {
 
 /**
  * Registers Identity listeners, then initializes the widget once.
- * @param {{ setUser: (user: unknown) => void, setIdentityError: (msg: string) => void }} handlers
+ * @param {{ setUser: (user: unknown) => void, setIdentityError: (msg: string) => void, setIsReady?: (ready: boolean) => void }} handlers
  * @returns {() => void}
  */
-export function subscribeNetlifyIdentity({ setUser, setIdentityError }) {
+export function subscribeNetlifyIdentity({ setUser, setIdentityError, setIsReady }) {
     if (isTestEnv()) {
         setUser(null);
+        if (setIsReady) setIsReady(true);
         return () => {};
     }
 
@@ -204,6 +205,7 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError }) {
     const onInit = (user) => {
         setIdentityError('');
         setUser(user ?? null);
+        if (setIsReady) setIsReady(true);
     };
     const onLogin = (user) => {
         setIdentityError('');
@@ -224,6 +226,13 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError }) {
     netlifyIdentity.on('error', onError);
 
     initNetlifyIdentityWidget();
+
+    // If the early-init in index.html already ran and fired the init event before React registered
+    // listeners, onInit above will never be called. Detect that via the flag set by index.html and
+    // mark the widget ready directly.
+    if (typeof window !== 'undefined' && window.__netlifyIdentityWidgetReady) {
+        if (setIsReady) setIsReady(true);
+    }
 
     try {
         setUser(netlifyIdentity.currentUser() ?? null);

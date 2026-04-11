@@ -16,6 +16,7 @@ function App() {
     const [clients, setClients] = useLocalStorage('salon-clients', INITIAL_CLIENTS);
     const [products, setProducts] = useLocalStorage('salon-products', INITIAL_PRODUCTS);
     const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const [hasIdentityTokenHash, setHasIdentityTokenHash] = useState(false);
     const { user, identityError, isReady: isIdentityReady, login, logout } = useNetlifyIdentity();
     const isAdmin = Boolean(user);
     const siteContent = useSiteContent();
@@ -35,11 +36,15 @@ function App() {
         setProducts(siteContent.services.map((s) => ({ ...s })));
     }, [siteContent.loading, siteContent.source, siteContent.services, setProducts]);
 
-    // Admin screen: query param, or Identity invite / recovery / confirmation links (hash)
+    // Admin screen: query param, or Identity invite / recovery / confirmation links (hash).
+    // Capture hasTokenHash now — the widget will clear the hash from the URL once it processes it,
+    // so we must read it before that happens (effects run before any async widget work on this tick).
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('admin') === 'true' || urlHasNetlifyIdentityTokenHash()) {
+        const tokenHash = urlHasNetlifyIdentityTokenHash();
+        if (urlParams.get('admin') === 'true' || tokenHash) {
             setShowAdminLogin(true);
+            if (tokenHash) setHasIdentityTokenHash(true);
         }
     }, []);
 
@@ -112,6 +117,7 @@ function App() {
                 identityError={identityError}
                 isIdentityReady={isIdentityReady}
                 setShowAdminLogin={setShowAdminLogin}
+                hasTokenHash={hasIdentityTokenHash}
             />
         );
     }

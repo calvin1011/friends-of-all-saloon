@@ -1,7 +1,7 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
 
-const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdminLogin }) => {
+const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdminLogin, hasTokenHash }) => {
     const handleBackToPublic = () => {
         setShowAdminLogin(false);
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -15,10 +15,17 @@ const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdmin
                         <Lock className="w-8 h-8 text-rose-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Access</h2>
-                    <p className="text-gray-600">
-                        Sign in with the email address you were invited with. If you opened an invite or password
-                        reset link from your email, use the button below to finish setting your password.
-                    </p>
+                    {hasTokenHash ? (
+                        <p className="text-gray-600">
+                            A sign-in window should open automatically to let you set or reset your password.
+                            If you do not see it, check for a pop-up or scroll the page. Once you have set
+                            your password you will be signed in.
+                        </p>
+                    ) : (
+                        <p className="text-gray-600">
+                            Sign in with the email address you were invited with.
+                        </p>
+                    )}
                 </div>
 
                 <div className="space-y-6">
@@ -28,17 +35,28 @@ const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdmin
                         </p>
                     ) : null}
 
-                    <button
-                        type="button"
-                        onClick={onOpenSignIn}
-                        className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={!isIdentityReady}
-                    >
-                        Sign in with Netlify Identity
-                    </button>
-                    {!isIdentityReady ? (
-                        <p className="text-gray-500 text-sm text-center">Preparing sign-in…</p>
-                    ) : null}
+                    {hasTokenHash && isIdentityReady ? (
+                        // Widget is ready and has processed the invite/recovery hash — the modal should
+                        // already be open. Show a status line instead of the login button so we don't
+                        // accidentally open the wrong (login) modal on top of the invite flow.
+                        <p className="text-gray-500 text-sm text-center">
+                            Check for the sign-in window — it should be open now.
+                        </p>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                onClick={onOpenSignIn}
+                                className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={!isIdentityReady}
+                            >
+                                Sign in with Netlify Identity
+                            </button>
+                            {!isIdentityReady ? (
+                                <p className="text-gray-500 text-sm text-center">Preparing sign-in…</p>
+                            ) : null}
+                        </>
+                    )}
                 </div>
 
                 <div className="mt-6 text-center">
