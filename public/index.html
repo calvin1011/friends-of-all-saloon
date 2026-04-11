@@ -19,6 +19,22 @@
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
+<script>
+  (function () {
+    try {
+      var h = window.location.hostname || '';
+      if (h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0') {
+        return;
+      }
+      if (!window.netlifyIdentity || document.getElementById('netlify-identity-widget')) {
+        return;
+      }
+      window.netlifyIdentity.init();
+    } catch (ignoreEarlyIdentityInit) {
+      /* Best-effort: React will call init again on localhost or if this runs too early. */
+    }
+  })();
+</script>
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div id="root"></div>
 </body>

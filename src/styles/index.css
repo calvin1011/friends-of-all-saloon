@@ -291,3 +291,8 @@ body {
 @media (min-width: 1024px) {
     .lg\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Netlify Identity widget defaults to z-index 99; keep the invite/recovery modal above app UI. */
+#netlify-identity-widget {
+    z-index: 99999 !important;
+}

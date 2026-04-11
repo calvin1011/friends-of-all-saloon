@@ -59,33 +59,70 @@ export function urlHasNetlifyIdentityTokenHash() {
     return IDENTITY_HASH_TOKEN_RE.test(window.location.hash || '');
 }
 
+function isLocalDevHostname(hostname) {
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+}
+
 /**
- * If the URL still contains an Identity hash after init, open the login modal so the widget
- * can finish invite / recovery flows (helps SPAs where timing misses the default handler).
+ * When REACT_APP_NETLIFY_IDENTITY_URL points at another host on a deployed site, invites and
+ * password reset tokens (bound to this origin) will never work against the wrong API.
+ * @returns {string} User-visible error, or empty string when OK.
  */
-function nudgeIdentityModalIfHashStillPresent() {
-    if (typeof window === 'undefined') {
-        return;
+export function getIdentityUrlConfigurationError() {
+    const explicit = getExplicitIdentityApiUrl();
+    if (!explicit || typeof window === 'undefined') {
+        return '';
     }
-    const tryOpen = () => {
-        const hash = window.location.hash || '';
-        if (!IDENTITY_HASH_TOKEN_RE.test(hash)) {
-            return;
+    try {
+        const url = new URL(explicit);
+        const host = window.location.hostname;
+        if (isLocalDevHostname(host)) {
+            return '';
         }
-        const netlifyIdentity = getWidget();
-        if (!netlifyIdentity) {
-            return;
+        if (url.hostname !== host) {
+            return 'Admin sign-in is misconfigured: REACT_APP_NETLIFY_IDENTITY_URL does not match this website. In Netlify open Site configuration → Environment variables and remove or correct REACT_APP_NETLIFY_IDENTITY_URL for this site.';
         }
-        initNetlifyIdentityWidget();
-        try {
-            netlifyIdentity.open('login');
-        } catch (err) {
-            logError('Netlify Identity nudge open failed', err);
+    } catch {
+        return 'REACT_APP_NETLIFY_IDENTITY_URL is not a valid URL. Fix or remove it in Netlify environment variables.';
+    }
+    return '';
+}
+
+/**
+ * The Identity widget keeps the modal body empty until settings load. If this request fails,
+ * users see a blank overlay. Preflight surfaces that as a readable error on our admin screen.
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<{ ok: boolean, message?: string }>}
+ */
+export async function preflightNetlifyIdentitySettings(signal) {
+    if (typeof window === 'undefined') {
+        return { ok: true };
+    }
+    const path = '/.netlify/identity/settings';
+    try {
+        const res = await fetch(`${window.location.origin}${path}`, {
+            method: 'GET',
+            credentials: 'omit',
+            signal,
+            headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+            return { ok: true };
         }
-    };
-    setTimeout(tryOpen, 0);
-    setTimeout(tryOpen, 400);
-    setTimeout(tryOpen, 1200);
+        return {
+            ok: false,
+            message: `Netlify Identity is not available on this domain (settings returned ${res.status}). In Netlify enable Identity under Site configuration and set Site URL to this exact site address.`,
+        };
+    } catch (err) {
+        if (err && typeof err === 'object' && err.name === 'AbortError') {
+            return { ok: true };
+        }
+        logError('Identity settings preflight failed', err);
+        return {
+            ok: false,
+            message: 'Could not reach Netlify Identity from this browser. Check your network or try again.',
+        };
+    }
 }
 
 /**
@@ -150,6 +187,13 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError }) {
         return () => {};
     }
 
+    const urlConfigError = getIdentityUrlConfigurationError();
+    if (urlConfigError) {
+        setIdentityError(urlConfigError);
+        setUser(null);
+        return () => {};
+    }
+
     const netlifyIdentity = getWidget();
     if (!netlifyIdentity) {
         setIdentityError('Sign-in is unavailable. The Identity script failed to load.');
@@ -180,7 +224,6 @@ export function subscribeNetlifyIdentity({ setUser, setIdentityError }) {
     netlifyIdentity.on('error', onError);
 
     initNetlifyIdentityWidget();
-    nudgeIdentityModalIfHashStillPresent();
 
     try {
         setUser(netlifyIdentity.currentUser() ?? null);

@@ -1,4 +1,10 @@
-import { formatIdentityError, getExplicitIdentityApiUrl, urlHasNetlifyIdentityTokenHash } from './netlifyIdentityClient';
+import {
+    formatIdentityError,
+    getExplicitIdentityApiUrl,
+    getIdentityUrlConfigurationError,
+    preflightNetlifyIdentitySettings,
+    urlHasNetlifyIdentityTokenHash,
+} from './netlifyIdentityClient';
 
 describe('netlifyIdentityClient', () => {
     const original = process.env.REACT_APP_NETLIFY_IDENTITY_URL;
@@ -48,6 +54,79 @@ describe('netlifyIdentityClient', () => {
         it('is false when hash is empty', () => {
             window.history.replaceState({}, '', '/');
             expect(urlHasNetlifyIdentityTokenHash()).toBe(false);
+        });
+    });
+
+    describe('getIdentityUrlConfigurationError', () => {
+        const originalEnv = process.env.REACT_APP_NETLIFY_IDENTITY_URL;
+        const originalLocation = window.location;
+
+        afterEach(() => {
+            if (originalEnv === undefined) {
+                delete process.env.REACT_APP_NETLIFY_IDENTITY_URL;
+            } else {
+                process.env.REACT_APP_NETLIFY_IDENTITY_URL = originalEnv;
+            }
+            window.location = originalLocation;
+        });
+
+        it('returns empty when override is unset', () => {
+            delete process.env.REACT_APP_NETLIFY_IDENTITY_URL;
+            expect(getIdentityUrlConfigurationError()).toBe('');
+        });
+
+        it('returns empty on localhost even when override host differs', () => {
+            process.env.REACT_APP_NETLIFY_IDENTITY_URL = 'https://friendsofall.netlify.app/.netlify/identity';
+            expect(getIdentityUrlConfigurationError()).toBe('');
+        });
+
+        it('returns a message when override host does not match deployed hostname', () => {
+            process.env.REACT_APP_NETLIFY_IDENTITY_URL = 'https://wrong-site.netlify.app/.netlify/identity';
+            delete window.location;
+            window.location = new URL('https://friendsofall.netlify.app/');
+            expect(getIdentityUrlConfigurationError()).toContain('misconfigured');
+        });
+
+        it('returns a message for an invalid URL', () => {
+            process.env.REACT_APP_NETLIFY_IDENTITY_URL = 'not-a-valid-url';
+            delete window.location;
+            window.location = new URL('https://friendsofall.netlify.app/');
+            expect(getIdentityUrlConfigurationError()).toContain('not a valid URL');
+        });
+    });
+
+    describe('preflightNetlifyIdentitySettings', () => {
+        const originalFetch = global.fetch;
+
+        afterEach(() => {
+            global.fetch = originalFetch;
+        });
+
+        it('returns ok true when settings respond 200', async () => {
+            global.fetch = jest.fn(() =>
+                Promise.resolve({
+                    ok: true,
+                    status: 200,
+                })
+            );
+            const result = await preflightNetlifyIdentitySettings();
+            expect(result.ok).toBe(true);
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringMatching(/\/\.netlify\/identity\/settings$/),
+                expect.any(Object)
+            );
+        });
+
+        it('returns ok false when settings respond 404', async () => {
+            global.fetch = jest.fn(() =>
+                Promise.resolve({
+                    ok: false,
+                    status: 404,
+                })
+            );
+            const result = await preflightNetlifyIdentitySettings();
+            expect(result.ok).toBe(false);
+            expect(result.message).toMatch(/404/);
         });
     });
 });

@@ -1,8 +1,10 @@
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
     logoutNetlifyIdentity,
     openNetlifyIdentityLogin,
+    preflightNetlifyIdentitySettings,
     subscribeNetlifyIdentity,
+    urlHasNetlifyIdentityTokenHash,
 } from '../lib/netlifyIdentityClient';
 
 /**
@@ -17,6 +19,28 @@ export function useNetlifyIdentity() {
         const unsub = subscribeNetlifyIdentity({ setUser, setIdentityError });
         setIsReady(true);
         return unsub;
+    }, []);
+
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'test') {
+            return undefined;
+        }
+        if (!urlHasNetlifyIdentityTokenHash()) {
+            return undefined;
+        }
+        const controller = new AbortController();
+        preflightNetlifyIdentitySettings(controller.signal).then((result) => {
+            if (result.ok) {
+                return;
+            }
+            setIdentityError((prev) => {
+                const trimmed = typeof prev === 'string' ? prev.trim() : '';
+                return trimmed.length > 0 ? prev : (result.message ?? '');
+            });
+        });
+        return () => {
+            controller.abort();
+        };
     }, []);
 
     const login = useCallback(() => {

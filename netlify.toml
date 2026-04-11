@@ -1,8 +1,9 @@
 # Netlify deploys the production build when this repo is connected in the Netlify UI.
 # Full checks (audit, lint, typecheck, tests) run in GitHub Actions — see .github/workflows/ci.yml
 #
-# Admin: enable Netlify Identity in the Netlify UI (Identity → Enable Identity), invite users,
-# and optionally set REACT_APP_NETLIFY_IDENTITY_URL for branch previews or local dev (see .env.example).
+# Admin: enable Netlify Identity (Site configuration → Identity), set Site URL to this site,
+# invite users. For production on the default *.netlify.app host, do NOT set
+# REACT_APP_NETLIFY_IDENTITY_URL (same-origin Identity). A wrong URL breaks invites and password reset.
 
 [build]
   publish = "build"
