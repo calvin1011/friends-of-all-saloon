@@ -303,12 +303,19 @@ export async function verifyAndSetPassword(token, type, newPassword) {
     const origin = window.location.origin;
     const verifyType = type === 'invite' ? 'signup' : type;
 
+    // For invite (signup) tokens, GoTrue requires the password in the verify request itself.
+    // For recovery tokens, we verify first then update the password separately.
+    const verifyBody = { token, type: verifyType };
+    if (type === 'invite') {
+        verifyBody.password = newPassword;
+    }
+
     let session;
     try {
         const verifyRes = await fetch(`${origin}/.netlify/identity/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, type: verifyType }),
+            body: JSON.stringify(verifyBody),
         });
         if (!verifyRes.ok) {
             const body = await verifyRes.text().catch(() => '');
@@ -325,6 +332,12 @@ export async function verifyAndSetPassword(token, type, newPassword) {
         return { success: false, error: 'Network error verifying your link. Please try again.' };
     }
 
+    // Invite tokens already set the password during verify — done.
+    if (type === 'invite') {
+        return { success: true };
+    }
+
+    // Recovery tokens need a separate password update call.
     try {
         const updateRes = await fetch(`${origin}/.netlify/identity/user`, {
             method: 'PUT',
