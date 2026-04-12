@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { verifyAndSetPassword } from '../lib/netlifyIdentityClient';
 
-const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdminLogin, identityToken }) => {
+const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdminLogin, identityToken, onTokenConsumed }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [formError, setFormError] = useState('');
@@ -33,6 +33,7 @@ const AdminLogin = ({ onOpenSignIn, identityError, isIdentityReady, setShowAdmin
 
         if (result.success) {
             setPasswordSet(true);
+            if (onTokenConsumed) onTokenConsumed();
         } else {
             setFormError(result.error);
         }

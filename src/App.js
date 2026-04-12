@@ -16,7 +16,7 @@ function App() {
     const [clients, setClients] = useLocalStorage('salon-clients', INITIAL_CLIENTS);
     const [products, setProducts] = useLocalStorage('salon-products', INITIAL_PRODUCTS);
     const [showAdminLogin, setShowAdminLogin] = useState(false);
-    const [identityToken] = useState(() => getExtractedIdentityToken());
+    const [identityToken, setIdentityToken] = useState(() => getExtractedIdentityToken());
     const { user, identityError, isReady: isIdentityReady, login, logout } = useNetlifyIdentity();
     const isAdmin = Boolean(user);
     const siteContent = useSiteContent();
@@ -48,6 +48,7 @@ function App() {
     useEffect(() => {
         if (user && showAdminLogin) {
             setShowAdminLogin(false);
+            setIdentityToken(null);
         }
     }, [user, showAdminLogin]);
 
@@ -115,6 +116,7 @@ function App() {
                 isIdentityReady={isIdentityReady}
                 setShowAdminLogin={setShowAdminLogin}
                 identityToken={identityToken}
+                onTokenConsumed={() => setIdentityToken(null)}
             />
         );
     }
