@@ -1,7 +1,8 @@
 import React from 'react';
 import { Scissors, Star, Clock } from 'lucide-react';
+import SiteMediaSections from './SiteMediaSections';
 
-const HomePage = ({ setActiveTab, heroTitle, heroSubtitle }) => {
+const HomePage = ({ setActiveTab, heroTitle, heroSubtitle, gallery, featuredVideos }) => {
     const features = [
         {
             icon: <Scissors className="w-8 h-8 text-rose-600" />,
@@ -48,6 +49,8 @@ const HomePage = ({ setActiveTab, heroTitle, heroSubtitle }) => {
                         </div>
                     ))}
                 </div>
+
+                <SiteMediaSections gallery={gallery} featuredVideos={featuredVideos} />
 
                 {/* Call to Action */}
                 <div className="card p-8 text-center fade-in animation-delay-300">

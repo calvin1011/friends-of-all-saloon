@@ -11,7 +11,9 @@ import { getSiteContent } from '../lib/cms/getSiteContent';
  *   error: Error | null,
  *   businessInfo: import('../lib/cms/siteContentTypes').SiteContent['businessInfo'],
  *   home: import('../lib/cms/siteContentTypes').SiteContent['home'],
- *   services: import('../lib/cms/siteContentTypes').SiteContent['services']
+ *   services: import('../lib/cms/siteContentTypes').SiteContent['services'],
+ *   gallery: import('../lib/cms/siteContentTypes').SiteContent['gallery'],
+ *   featuredVideos: import('../lib/cms/siteContentTypes').SiteContent['featuredVideos']
  * }}
  */
 export function useSiteContent() {
@@ -27,7 +29,9 @@ export function useSiteContent() {
             error: null,
             businessInfo: base.businessInfo,
             home: base.home,
-            services: base.services
+            services: base.services,
+            gallery: base.gallery,
+            featuredVideos: base.featuredVideos
         };
     });
 
@@ -46,7 +50,9 @@ export function useSiteContent() {
                 error: res.error,
                 businessInfo: res.content.businessInfo,
                 home: res.content.home,
-                services: res.content.services
+                services: res.content.services,
+                gallery: res.content.gallery,
+                featuredVideos: res.content.featuredVideos
             });
         });
         return () => {

@@ -26,10 +26,26 @@
  */
 
 /**
+ * @typedef {Object} GalleryImage
+ * @property {string} url
+ * @property {string} alt
+ * @property {string} [caption]
+ */
+
+/**
+ * @typedef {Object} FeaturedVideo
+ * @property {string} title
+ * @property {'youtube'|'vimeo'} provider
+ * @property {string} videoId
+ */
+
+/**
  * @typedef {Object} SiteContent
  * @property {BusinessInfo} businessInfo
  * @property {HomeContent} home
  * @property {ServiceItem[]} services
+ * @property {GalleryImage[]} gallery
+ * @property {FeaturedVideo[]} featuredVideos
  */
 
 export {};

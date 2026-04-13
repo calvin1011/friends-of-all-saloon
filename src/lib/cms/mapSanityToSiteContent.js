@@ -1,4 +1,10 @@
 import { SERVICE_CATEGORIES } from '../../utils/constants';
+import {
+    isSafeHttpsImageUrl,
+    isValidVideoProvider,
+    isValidVimeoVideoId,
+    isValidYoutubeVideoId
+} from '../safeMediaUrls';
 
 /**
  * @param {unknown} value
@@ -141,6 +147,74 @@ export function mapServicesList(servicesRaw, fallback) {
 }
 
 /**
+ * @param {unknown} raw
+ * @param {import('./siteContentTypes').SiteContent} fallback
+ * @returns {import('./siteContentTypes').SiteContent['gallery']}
+ */
+export function mapGalleryList(raw, fallback) {
+    if (!Array.isArray(raw)) {
+        return fallback.gallery.map((g) => ({ ...g }));
+    }
+    const out = [];
+    for (const item of raw) {
+        if (!item || typeof item !== 'object') {
+            continue;
+        }
+        const row = /** @type {Record<string, unknown>} */ (item);
+        const url = typeof row.url === 'string' ? row.url.trim() : '';
+        if (!isSafeHttpsImageUrl(url)) {
+            continue;
+        }
+        const altBase = typeof row.alt === 'string' ? row.alt.trim() : '';
+        const alt = altBase.length > 0 ? altBase : 'Salon photo';
+        const cap = typeof row.caption === 'string' ? row.caption.trim() : '';
+        /** @type {import('./siteContentTypes').GalleryImage} */
+        const entry = { url, alt };
+        if (cap.length > 0) {
+            entry.caption = cap;
+        }
+        out.push(entry);
+    }
+    return out;
+}
+
+/**
+ * @param {unknown} raw
+ * @param {import('./siteContentTypes').SiteContent} fallback
+ * @returns {import('./siteContentTypes').SiteContent['featuredVideos']}
+ */
+export function mapFeaturedVideosList(raw, fallback) {
+    if (!Array.isArray(raw)) {
+        return fallback.featuredVideos.map((v) => ({ ...v }));
+    }
+    const out = [];
+    for (const item of raw) {
+        if (!item || typeof item !== 'object') {
+            continue;
+        }
+        const row = /** @type {Record<string, unknown>} */ (item);
+        const title = typeof row.title === 'string' ? row.title.trim() : '';
+        const provider = row.provider;
+        const videoId = typeof row.videoId === 'string' ? row.videoId.trim() : '';
+        if (!title || !isValidVideoProvider(provider)) {
+            continue;
+        }
+        if (provider === 'youtube' && !isValidYoutubeVideoId(videoId)) {
+            continue;
+        }
+        if (provider === 'vimeo' && !isValidVimeoVideoId(videoId)) {
+            continue;
+        }
+        out.push({
+            title,
+            provider,
+            videoId
+        });
+    }
+    return out;
+}
+
+/**
  * @param {unknown} apiResult
  * @param {import('./siteContentTypes').SiteContent} fallback
  * @returns {import('./siteContentTypes').SiteContent}
@@ -153,7 +227,9 @@ export function mapSanityToSiteContent(apiResult, fallback) {
                 hours: { ...fallback.businessInfo.hours }
             },
             home: { ...fallback.home },
-            services: fallback.services.map((s) => ({ ...s }))
+            services: fallback.services.map((s) => ({ ...s })),
+            gallery: fallback.gallery.map((g) => ({ ...g })),
+            featuredVideos: fallback.featuredVideos.map((v) => ({ ...v }))
         };
     }
 
@@ -162,6 +238,18 @@ export function mapSanityToSiteContent(apiResult, fallback) {
 
     const partial = mapProfileToBusinessAndHome(profile, fallback);
     const services = mapServicesList(servicesRaw, fallback);
+    const gallery = mapGalleryList(
+        profile && typeof profile === 'object'
+            ? /** @type {Record<string, unknown>} */ (profile).gallery
+            : undefined,
+        fallback
+    );
+    const featuredVideos = mapFeaturedVideosList(
+        profile && typeof profile === 'object'
+            ? /** @type {Record<string, unknown>} */ (profile).featuredVideos
+            : undefined,
+        fallback
+    );
 
     return {
         businessInfo: {
@@ -169,6 +257,8 @@ export function mapSanityToSiteContent(apiResult, fallback) {
             hours: { ...partial.businessInfo.hours }
         },
         home: { ...partial.home },
-        services
+        services,
+        gallery,
+        featuredVideos
     };
 }

@@ -23,6 +23,8 @@ export function getFallbackSiteContent() {
                 'Professional hair styling services with a personal touch. Where every client becomes family.',
             tagline: 'Professional hair styling with a personal touch'
         },
-        services: INITIAL_PRODUCTS.map((p) => ({ ...p }))
+        services: INITIAL_PRODUCTS.map((p) => ({ ...p })),
+        gallery: [],
+        featuredVideos: []
     };
 }

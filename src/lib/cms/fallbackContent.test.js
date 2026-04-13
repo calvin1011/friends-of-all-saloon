@@ -11,5 +11,7 @@ describe('getFallbackSiteContent', () => {
         expect(content.services).toHaveLength(INITIAL_PRODUCTS.length);
         expect(content.home.heroTitle.length).toBeGreaterThan(0);
         expect(content.home.heroSubtitle.length).toBeGreaterThan(0);
+        expect(content.gallery).toEqual([]);
+        expect(content.featuredVideos).toEqual([]);
     });
 });

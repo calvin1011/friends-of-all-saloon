@@ -1,5 +1,7 @@
 import { BUSINESS_INFO } from '../../utils/constants';
 import {
+    mapFeaturedVideosList,
+    mapGalleryList,
     mapSanityToSiteContent,
     mapServicesList,
     sanityIdToNumericId
@@ -76,4 +78,77 @@ describe('mapSanityToSiteContent', () => {
         expect(mapped.home.heroSubtitle).toBe('We style');
         expect(mapped.services.some((s) => s.name === 'Trim')).toBe(true);
     });
+
+    it('maps gallery and videos from profile', () => {
+        const mapped = mapSanityToSiteContent(
+            {
+                profile: {
+                    name: 'CMS Salon',
+                    tagline: 'Great hair',
+                    heroTitle: 'Hello',
+                    heroSubtitle: 'We style',
+                    phone: '555',
+                    addressLine: '1 Main',
+                    hours: [],
+                    gallery: [
+                        {
+                            url: 'https://cdn.sanity.io/images/test/production/photo.jpg',
+                            alt: 'Cut',
+                            caption: 'Fresh cut'
+                        }
+                    ],
+                    featuredVideos: [
+                        {
+                            title: 'Salon tour',
+                            provider: 'youtube',
+                            videoId: 'dQw4w9WgXcQ'
+                        }
+                    ]
+                },
+                services: []
+            },
+            fallback
+        );
+
+        expect(mapped.gallery).toHaveLength(1);
+        expect(mapped.gallery[0].url).toContain('cdn.sanity.io');
+        expect(mapped.featuredVideos[0].provider).toBe('youtube');
+    });
 });
+
+describe('mapGalleryList', () => {
+    const fallback = getFallbackSiteContent();
+
+    it('returns fallback when raw is not an array', () => {
+        expect(mapGalleryList(undefined, fallback)).toEqual(fallback.gallery);
+    });
+
+    it('maps only https image rows', () => {
+        const out = mapGalleryList(
+            [
+                { url: 'https://example.com/a.jpg', alt: 'A' },
+                { url: 'http://insecure.com/b.jpg', alt: 'B' }
+            ],
+            fallback
+        );
+        expect(out).toHaveLength(1);
+        expect(out[0].alt).toBe('A');
+    });
+});
+
+describe('mapFeaturedVideosList', () => {
+    const fallback = getFallbackSiteContent();
+
+    it('skips invalid provider or id', () => {
+        const out = mapFeaturedVideosList(
+            [
+                { title: 'Ok', provider: 'youtube', videoId: 'dQw4w9WgXcQ' },
+                { title: 'Bad', provider: 'youtube', videoId: 'no' },
+                { title: 'Bad2', provider: 'vimeo', videoId: 'abc' }
+            ],
+            fallback
+        );
+        expect(out).toHaveLength(1);
+    });
+});
+

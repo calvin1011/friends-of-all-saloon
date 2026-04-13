@@ -60,6 +60,8 @@ function App() {
                         setActiveTab={setActiveTab}
                         heroTitle={siteContent.home.heroTitle}
                         heroSubtitle={siteContent.home.heroSubtitle}
+                        gallery={siteContent.gallery}
+                        featuredVideos={siteContent.featuredVideos}
                     />
                 );
             case 'clients':
@@ -103,6 +105,8 @@ function App() {
                         setActiveTab={setActiveTab}
                         heroTitle={siteContent.home.heroTitle}
                         heroSubtitle={siteContent.home.heroSubtitle}
+                        gallery={siteContent.gallery}
+                        featuredVideos={siteContent.featuredVideos}
                     />
                 );
         }
